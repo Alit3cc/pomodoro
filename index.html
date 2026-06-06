@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>!function(){var t=localStorage.getItem('pomo-theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')}()</script>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pomodoro Timer – Free Focus &amp; Productivity Timer Online</title>
+<meta name="description" content="Boost your productivity with our free Pomodoro Timer. Customizable 25/5/15-minute intervals, session tracking, dark mode &amp; offline PWA support. No login required." />
+<meta name="keywords" content="pomodoro timer,focus timer,productivity timer,time management,pomodoro technique,work timer,break timer,25 minutes" />
+<meta name="author" content="Pomodoro Focus Timer" />
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large" />
+<link rel="canonical" href="https://pomodoro-focus-timer.app/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://pomodoro-focus-timer.app/" />
+<meta property="og:title" content="Pomodoro Timer – Free Focus &amp; Productivity Timer Online" />
+<meta property="og:description" content="Customizable Pomodoro intervals, session tracking, dark mode &amp; offline PWA support. Free, no login." />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Pomodoro Timer – Free Focus &amp; Productivity Timer Online" />
+<meta name="twitter:description" content="Customizable Pomodoro intervals, session tracking, dark mode &amp; offline PWA support. Free, no login." />
+<meta name="theme-color" content="#e63946" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Pomodoro" />
+<link rel="manifest" id="pwa-manifest" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Pomodoro Focus Timer","url":"https://pomodoro-focus-timer.app/","description":"Free online Pomodoro Timer to boost focus and productivity with timed work and break intervals.","applicationCategory":"ProductivityApplication","operatingSystem":"Any","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Customizable intervals","Session tracking","Dark mode","Offline PWA support","Browser notifications","Keyboard shortcuts"]}</script>
+<style>
+/* ── Variables ──────────────────────────────────────────── */
+:root {
+  --bg:#f0f2f5; --surface:#fff; --surface-alt:#f1f5f9; --border:#e2e8f0;
+  --text:#0f172a; --text-muted:#64748b;
+  --accent:#e63946; --accent-rgb:230,57,70; --accent-hover:#c1121f;
+  --ring-bg:#e2e8f0;
+  --shadow:0 2px 24px rgba(0,0,0,.07);
+  --speed:.25s; --radius:1rem;
+}
+[data-theme="dark"] {
+  --bg:#0d1117; --surface:#161b22; --surface-alt:#21262d; --border:#30363d;
+  --text:#e6edf3; --text-muted:#8b949e; --ring-bg:#21262d;
+  --shadow:0 2px 24px rgba(0,0,0,.35);
+}
+[data-mode="work"]  { --accent:#e63946; --accent-rgb:230,57,70;  --accent-hover:#c1121f; }
+[data-mode="short"] { --accent:#2a9d8f; --accent-rgb:42,157,143; --accent-hover:#1e7167; }
+[data-mode="long"]  { --accent:#457b9d; --accent-rgb:69,123,157; --accent-hover:#2d5f7c; }
+
+/* ── Reset ──────────────────────────────────────────────── */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; -webkit-text-size-adjust:100%; }
+body { background:var(--bg); color:var(--text); min-height:100dvh; display:flex; flex-direction:column; transition:background var(--speed),color var(--speed); }
+
+/* ── Accessibility ──────────────────────────────────────── */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:.25rem; }
+
+/* ── Header ─────────────────────────────────────────────── */
+header { display:flex; align-items:center; justify-content:space-between; padding:.75rem 1.25rem; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; transition:background var(--speed),border-color var(--speed); }
+.logo-heading { font-size:inherit; font-weight:inherit; line-height:1; }
+.logo { display:flex; align-items:center; gap:.4375rem; font-weight:700; font-size:1rem; letter-spacing:-.02em; color:var(--accent); text-decoration:none; transition:color var(--speed); }
+.logo svg { width:1.375rem; height:1.375rem; flex-shrink:0; }
+.header-actions { display:flex; gap:.5rem; }
+
+/* ── Icon button ────────────────────────────────────────── */
+.icon-btn { display:flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; background:var(--surface-alt); border:1px solid var(--border); border-radius:.5rem; color:var(--text-muted); cursor:pointer; transition:all var(--speed); }
+.icon-btn:hover { background:var(--border); color:var(--text); }
+.icon-btn:active { transform:scale(.93); }
+.icon-btn svg { width:1rem; height:1rem; }
+
+/* ── Main ───────────────────────────────────────────────── */
+main { flex:1; display:flex; flex-direction:column; align-items:center; padding:2rem 1rem 3rem; gap:1.375rem; }
+
+/* ── Task input ─────────────────────────────────────────── */
+.task-wrap { width:100%; max-width:420px; }
+.task-input { width:100%; padding:.6875rem 1rem; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--text); font-family:inherit; font-size:.9375rem; text-align:center; outline:none; transition:border-color var(--speed),background var(--speed); }
+.task-input::placeholder { color:var(--text-muted); }
+.task-input:focus { border-color:var(--accent); }
+
+/* ── Mode tabs ──────────────────────────────────────────── */
+.mode-tabs { display:flex; gap:.3125rem; background:var(--surface); border:1px solid var(--border); border-radius:calc(var(--radius) + .375rem); padding:.3125rem; transition:background var(--speed),border-color var(--speed); }
+.tab-btn { padding:.4375rem .875rem; background:transparent; border:none; border-radius:calc(var(--radius) + .125rem); color:var(--text-muted); font-family:inherit; font-size:.8125rem; font-weight:500; cursor:pointer; transition:all var(--speed); white-space:nowrap; }
+.tab-btn.active { background:var(--accent); color:#fff; }
+.tab-btn:not(.active):hover { background:var(--surface-alt); color:var(--text); }
+
+/* ── Timer card ─────────────────────────────────────────── */
+.timer-card { background:var(--surface); border:1px solid var(--border); border-radius:1.75rem; padding:2.25rem 2rem 1.75rem; display:flex; flex-direction:column; align-items:center; gap:1.375rem; width:100%; max-width:360px; box-shadow:var(--shadow); transition:background var(--speed),border-color var(--speed),box-shadow var(--speed); }
+
+/* ── Ring ───────────────────────────────────────────────── */
+.ring-wrap { position:relative; width:220px; height:220px; }
+.ring-svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring-track { fill:none; stroke:var(--ring-bg); stroke-width:10; transition:stroke var(--speed); }
+.ring-fill { fill:none; stroke:var(--accent); stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset .88s linear,stroke .45s ease; }
+.ring-fill.no-transition { transition:none !important; }
+.ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.1875rem; }
+.time-display { font-size:3.25rem; font-weight:800; letter-spacing:-.04em; line-height:1; font-variant-numeric:tabular-nums; color:var(--text); transition:color var(--speed); }
+.mode-label { font-size:.6875rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); transition:color var(--speed); }
+.task-label { font-size:.6875rem; color:var(--text-muted); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center; }
+
+/* ── Session dots ───────────────────────────────────────── */
+.session-dots { display:flex; gap:.4375rem; }
+.session-dot { width:.5625rem; height:.5625rem; border-radius:50%; background:var(--ring-bg); transition:background .35s ease; }
+.session-dot.filled { background:var(--accent); }
+
+/* ── Controls ───────────────────────────────────────────── */
+.controls { display:flex; align-items:center; gap:.75rem; }
+.ctrl-btn { display:flex; align-items:center; justify-content:center; border:none; border-radius:50%; cursor:pointer; transition:all var(--speed); }
+.ctrl-btn:active { transform:scale(.92); }
+.ctrl-btn.secondary { width:2.75rem; height:2.75rem; background:var(--surface-alt); border:1.5px solid var(--border); color:var(--text-muted); }
+.ctrl-btn.secondary:hover { background:var(--border); color:var(--text); }
+.ctrl-btn.secondary svg { width:1.125rem; height:1.125rem; }
+.ctrl-btn.primary { width:3.75rem; height:3.75rem; background:var(--accent); color:#fff; box-shadow:0 4px 16px rgba(var(--accent-rgb),.4); }
+.ctrl-btn.primary:hover { background:var(--accent-hover); box-shadow:0 6px 22px rgba(var(--accent-rgb),.55); }
+.ctrl-btn.primary svg { width:1.375rem; height:1.375rem; }
+
+/* ── Keyboard hints ─────────────────────────────────────── */
+.kbd-hints { font-size:.6875rem; color:var(--text-muted); display:flex; gap:.875rem; flex-wrap:wrap; justify-content:center; }
+.kbd-hints span { display:flex; align-items:center; gap:.25rem; }
+kbd { font-family:inherit; font-size:.625rem; background:var(--surface-alt); border:1px solid var(--border); border-radius:.25rem; padding:.0625rem .3125rem; color:var(--text-muted); }
+
+/* ── Settings panel ─────────────────────────────────────── */
+.settings-panel { width:100%; max-width:360px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; max-height:0; opacity:0; transition:max-height .35s ease,opacity .25s ease,border-color var(--speed); }
+.settings-panel.open { max-height:280px; opacity:1; }
+.settings-inner { padding:1.25rem; display:flex; flex-direction:column; gap:1rem; }
+.settings-title { font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); }
+.settings-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+.setting-item { display:flex; flex-direction:column; gap:.3125rem; }
+.setting-item label { font-size:.75rem; font-weight:500; color:var(--text-muted); }
+.setting-item input { width:100%; padding:.5rem; background:var(--surface-alt); border:1.5px solid var(--border); border-radius:.5rem; color:var(--text); font-family:inherit; font-size:.9375rem; font-weight:700; text-align:center; outline:none; -moz-appearance:textfield; appearance:textfield; transition:border-color var(--speed),background var(--speed); }
+.setting-item input::-webkit-inner-spin-button,
+.setting-item input::-webkit-outer-spin-button { -webkit-appearance:none; }
+.setting-item input:focus { border-color:var(--accent); }
+.apply-btn { align-self:flex-end; padding:.5rem 1.125rem; background:var(--accent); border:none; border-radius:.5rem; color:#fff; font-family:inherit; font-size:.875rem; font-weight:600; cursor:pointer; transition:background var(--speed); }
+.apply-btn:hover { background:var(--accent-hover); }
+
+/* ── Install banner ─────────────────────────────────────── */
+.install-banner { display:none; align-items:center; gap:.75rem; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:.875rem 1rem; width:100%; max-width:360px; font-size:.875rem; transition:background var(--speed),border-color var(--speed); }
+.install-banner.visible { display:flex; }
+.install-banner p { flex:1; color:var(--text); }
+.install-banner strong { color:var(--accent); }
+.install-action-btn { padding:.4375rem .875rem; background:var(--accent); border:none; border-radius:.5rem; color:#fff; font-family:inherit; font-size:.8125rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:background var(--speed); }
+.install-action-btn:hover { background:var(--accent-hover); }
+.dismiss-btn { background:none; border:none; color:var(--text-muted); font-size:1rem; cursor:pointer; padding:.25rem; line-height:1; }
+
+/* ── About / SEO ────────────────────────────────────────── */
+.about-section { width:100%; max-width:560px; padding:0 .5rem; }
+.about-section h2 { font-size:1.0625rem; font-weight:700; margin-bottom:.5rem; color:var(--text); }
+.about-section p { font-size:.875rem; line-height:1.7; color:var(--text-muted); margin-bottom:.75rem; }
+.about-section p:last-child { margin-bottom:0; }
+
+/* ── Footer ─────────────────────────────────────────────── */
+footer { text-align:center; padding:1.25rem 1rem; font-size:.8125rem; color:var(--text-muted); border-top:1px solid var(--border); transition:border-color var(--speed); }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width:380px) {
+  .time-display { font-size:2.75rem; }
+  .ring-wrap { width:188px; height:188px; }
+  .timer-card { padding:1.75rem 1.25rem 1.5rem; }
+  .tab-btn { padding:.375rem .625rem; font-size:.75rem; }
+}
+@media (min-width:640px) { main { padding:3rem 1.5rem 4rem; } }
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { transition-duration:.01ms !important; animation-duration:.01ms !important; }
+  .ring-fill { transition:none !important; }
+}
+</style>
+</head>
+
+<body data-mode="work">
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header>
+  <h1 class="logo-heading">
+    <a href="/" class="logo" aria-label="Pomodoro Focus Timer – Home">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="16" cy="20" r="11" fill="currentColor" opacity=".18"/>
+        <circle cx="16" cy="20" r="11" stroke="currentColor" stroke-width="2"/>
+        <path d="M16 9C13 5 10 6 10 8.5C10 10 11.5 11 13 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M16 9C19 5 22 6 22 8.5C22 10 20.5 11 19 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="16" y1="9" x2="16" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Pomodoro Timer
+    </a>
+  </h1>
+  <div class="header-actions">
+    <button class="icon-btn" id="settings-btn" aria-label="Open settings" aria-expanded="false" aria-controls="settings-panel">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.75"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.75"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="theme-btn" aria-label="Switch to dark mode">
+      <svg id="theme-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main>
+
+  <!-- Task input -->
+  <div class="task-wrap">
+    <label class="sr-only" for="task-input">What are you working on?</label>
+    <input type="text" id="task-input" class="task-input" placeholder="What are you working on?" maxlength="80" autocomplete="off" spellcheck="false" />
+  </div>
+
+  <!-- Mode tabs -->
+  <nav aria-label="Timer mode" role="tablist">
+    <div class="mode-tabs">
+      <button class="tab-btn active" role="tab" aria-selected="true"  data-mode="work"  aria-controls="timer-region">Pomodoro</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" data-mode="short" aria-controls="timer-region">Short Break</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" data-mode="long"  aria-controls="timer-region">Long Break</button>
+    </div>
+  </nav>
+
+  <!-- Timer card -->
+  <section class="timer-card" id="timer-region" role="tabpanel" aria-label="Timer">
+
+    <!-- SVG ring -->
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle class="ring-track" cx="120" cy="120" r="104"/>
+        <circle class="ring-fill" cx="120" cy="120" r="104" id="ring-progress"/>
+      </svg>
+      <div class="ring-center">
+        <time id="time-display" class="time-display" aria-live="polite" aria-label="Time remaining">25:00</time>
+        <span id="mode-label" class="mode-label" aria-live="polite">Focus</span>
+        <span id="task-label" class="task-label"></span>
+      </div>
+    </div>
+
+    <!-- Session dots -->
+    <div class="session-dots" role="status" aria-label="Completed Pomodoro sessions">
+      <div class="session-dot" id="dot-1" title="Session 1"></div>
+      <div class="session-dot" id="dot-2" title="Session 2"></div>
+      <div class="session-dot" id="dot-3" title="Session 3"></div>
+      <div class="session-dot" id="dot-4" title="Session 4"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls" role="group" aria-label="Timer controls">
+      <button class="ctrl-btn secondary" id="reset-btn" aria-label="Reset timer" title="Reset (R)">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 3v5h5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn primary" id="start-btn" aria-label="Start timer" aria-pressed="false">
+        <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 4.5l12 7.5-12 7.5V4.5z"/>
+        </svg>
+        <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:none">
+          <rect x="6" y="4" width="4" height="16" rx="1.5"/>
+          <rect x="14" y="4" width="4" height="16" rx="1.5"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn secondary" id="skip-btn" aria-label="Skip to next session" title="Skip (S)">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5 4l10 8-10 8V4z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+          <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Keyboard hints -->
+    <div class="kbd-hints" aria-label="Keyboard shortcuts">
+      <span><kbd>Space</kbd> Start/Pause</span>
+      <span><kbd>R</kbd> Reset</span>
+      <span><kbd>S</kbd> Skip</span>
+    </div>
+  </section>
+
+  <!-- Settings panel -->
+  <section class="settings-panel" id="settings-panel" aria-labelledby="settings-title-lbl" aria-hidden="true">
+    <div class="settings-inner">
+      <span class="settings-title" id="settings-title-lbl">Timer Duration — minutes</span>
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label for="cfg-work">Pomodoro</label>
+          <input type="number" id="cfg-work" min="1" max="99" value="25" />
+        </div>
+        <div class="setting-item">
+          <label for="cfg-short">Short Break</label>
+          <input type="number" id="cfg-short" min="1" max="99" value="5" />
+        </div>
+        <div class="setting-item">
+          <label for="cfg-long">Long Break</label>
+          <input type="number" id="cfg-long" min="1" max="99" value="15" />
+        </div>
+      </div>
+      <button class="apply-btn" id="apply-btn">Apply Settings</button>
+    </div>
+  </section>
+
+  <!-- PWA install banner -->
+  <div class="install-banner" id="install-banner" role="complementary" aria-label="Install the app">
+    <p><strong>Install</strong> Pomodoro Timer for offline access</p>
+    <button class="install-action-btn" id="install-btn">Install</button>
+    <button class="dismiss-btn" id="dismiss-btn" aria-label="Dismiss">✕</button>
+  </div>
+
+  <!-- SEO / About -->
+  <article class="about-section" aria-label="About the Pomodoro Technique">
+    <h2>What is the Pomodoro Technique?</h2>
+    <p>
+      The <strong>Pomodoro Technique</strong> is a proven time management method by Francesco Cirillo:
+      work for 25 focused minutes, then take a 5-minute break. After four sessions,
+      reward yourself with a longer 15–30 minute break to fully recharge.
+    </p>
+    <p>
+      Structured intervals prevent mental fatigue, sharpen concentration, and make large tasks
+      feel approachable. This timer works completely offline — no account, no ads, no tracking.
+    </p>
+  </article>
+
+</main>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <p>© <span id="footer-year"></span> Pomodoro Focus Timer &nbsp;·&nbsp; Free &amp; open-source &nbsp;·&nbsp; Zero ads, zero tracking</p>
+</footer>
+
+<script>
+'use strict';
+
+/* ── Constants ──────────────────────────────────────────── */
+const RADIUS       = 104;
+const CIRCUMFERENCE = +(2 * Math.PI * RADIUS).toFixed(4); // 653.4513
+const STORAGE_KEYS = { theme:'pomo-theme', work:'pomo-work', short:'pomo-short', long:'pomo-long', sessions:'pomo-sessions' };
+const MODE_LABELS  = { work:'Focus', short:'Short Break', long:'Long Break' };
+
+/* ── Config (persisted) ─────────────────────────────────── */
+let config = {
+  work:  +(localStorage.getItem(STORAGE_KEYS.work)     || 25),
+  short: +(localStorage.getItem(STORAGE_KEYS.short)    || 5),
+  long:  +(localStorage.getItem(STORAGE_KEYS.long)     || 15),
+};
+
+/* ── State ──────────────────────────────────────────────── */
+let currentMode   = 'work';
+let isRunning     = false;
+let secondsLeft   = config.work * 60;
+let totalSeconds  = config.work * 60;
+let endTimestamp  = null;
+let tickHandle    = null;
+let sessionCount  = +(localStorage.getItem(STORAGE_KEYS.sessions) || 0);
+let installEvent  = null;
+
+/* ── DOM refs ───────────────────────────────────────────── */
+const G = id => document.getElementById(id);
+const timeDisplay  = G('time-display');
+const modeLabel    = G('mode-label');
+const taskLabel    = G('task-label');
+const taskInput    = G('task-input');
+const ringProgress = G('ring-progress');
+const startBtn     = G('start-btn');
+const playIcon     = G('play-icon');
+const pauseIcon    = G('pause-icon');
+const sessionDots  = [1,2,3,4].map(n => G(`dot-${n}`));
+const tabButtons   = document.querySelectorAll('.tab-btn');
+const settingsBtn  = G('settings-btn');
+const settingsPanel= G('settings-panel');
+const cfgWork      = G('cfg-work');
+const cfgShort     = G('cfg-short');
+const cfgLong      = G('cfg-long');
+
+/* ── Bootstrap ──────────────────────────────────────────── */
+ringProgress.style.strokeDasharray  = CIRCUMFERENCE;
+ringProgress.style.strokeDashoffset = 0;
+cfgWork.value  = config.work;
+cfgShort.value = config.short;
+cfgLong.value  = config.long;
+G('footer-year').textContent = new Date().getFullYear();
+syncThemeIcon();
+// Round 1 on very first load
+if (sessionCount === 0) {
+  sessionCount = 1;
+  localStorage.setItem(STORAGE_KEYS.sessions, sessionCount);
+}
+renderTime();
+renderRing();
+renderDots();
+initManifest();
+initServiceWorker();
+
+/* ── Theme ──────────────────────────────────────────────── */
+function syncThemeIcon() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  G('theme-icon').innerHTML = isDark
+    ? `<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.75"/>
+       <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m12.72-12.72 1.42-1.42"
+         stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>`
+    : `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"
+         stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>`;
+  G('theme-btn').ariaLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+}
+
+G('theme-btn').addEventListener('click', () => {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem(STORAGE_KEYS.theme, next);
+  syncThemeIcon();
+});
+
+/* ── Timer core ─────────────────────────────────────────── */
+function startTimer() {
+  isRunning    = true;
+  endTimestamp = Date.now() + secondsLeft * 1000;
+  playIcon.style.display  = 'none';
+  pauseIcon.style.display = '';
+  startBtn.ariaPressed    = 'true';
+  startBtn.ariaLabel      = 'Pause timer';
+  tickHandle = setInterval(tick, 400);
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function pauseTimer() {
+  isRunning = false;
+  clearInterval(tickHandle);
+  playIcon.style.display  = '';
+  pauseIcon.style.display = 'none';
+  startBtn.ariaPressed    = 'false';
+  startBtn.ariaLabel      = 'Start timer';
+}
+
+function tick() {
+  const remaining = Math.max(0, Math.round((endTimestamp - Date.now()) / 1000));
+  if (remaining === secondsLeft) return;
+  secondsLeft = remaining;
+  renderTime();
+  renderRing();
+  if (secondsLeft <= 0) {
+    clearInterval(tickHandle);
+    isRunning = false;
+    playIcon.style.display  = '';
+    pauseIcon.style.display = 'none';
+    startBtn.ariaPressed    = 'false';
+    startBtn.ariaLabel      = 'Start timer';
+    onTimerComplete();
+  }
+}
+
+function onTimerComplete() {
+  playBell();
+  sendNotification();
+  advanceSession();
+}
+
+function resetTimer() {
+  pauseTimer();
+  secondsLeft  = config[currentMode] * 60;
+  totalSeconds = secondsLeft;
+  renderTime();
+  // Instant ring reset — bypass CSS transition
+  ringProgress.classList.add('no-transition');
+  ringProgress.style.strokeDashoffset = '0';
+  requestAnimationFrame(() => requestAnimationFrame(() => ringProgress.classList.remove('no-transition')));
+}
+
+function skipSession() {
+  if (isRunning) pauseTimer();
+  advanceSession();
+}
+
+startBtn.addEventListener('click', () => isRunning ? pauseTimer() : startTimer());
+G('reset-btn').addEventListener('click', resetTimer);
+G('skip-btn').addEventListener('click', skipSession);
+
+/* ── Session flow ───────────────────────────────────────── */
+function advanceSession() {
+  if (currentMode === 'work') {
+    // Focus ended → switch to break; dot fills when the NEXT focus begins
+    switchMode(sessionCount >= 4 ? 'long' : 'short');
+  } else {
+    // Break ended → increment round, fill dot, start next Focus
+    sessionCount = currentMode === 'long' ? 1 : Math.min(4, sessionCount + 1);
+    localStorage.setItem(STORAGE_KEYS.sessions, sessionCount);
+    renderDots();
+    switchMode('work');
+  }
+}
+
+/* ── Mode management ────────────────────────────────────── */
+function switchMode(mode) {
+  if (isRunning) pauseTimer();
+  currentMode  = mode;
+  totalSeconds = config[mode] * 60;
+  secondsLeft  = totalSeconds;
+  document.body.dataset.mode     = mode;
+  modeLabel.textContent          = MODE_LABELS[mode];
+  tabButtons.forEach(btn => {
+    const active = btn.dataset.mode === mode;
+    btn.classList.toggle('active', active);
+    btn.ariaSelected = String(active);
+  });
+  renderTime();
+  renderRing();
+}
+
+tabButtons.forEach(btn =>
+  btn.addEventListener('click', () => {
+    if (btn.dataset.mode !== currentMode) switchMode(btn.dataset.mode);
+  })
+);
+
+/* ── URL mode param (PWA shortcuts) ─────────────────────── */
+const urlMode = new URLSearchParams(location.search).get('mode');
+if (urlMode && ['work','short','long'].includes(urlMode)) switchMode(urlMode);
+
+/* ── Rendering ──────────────────────────────────────────── */
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function renderTime() {
+  const m   = Math.floor(secondsLeft / 60);
+  const s   = secondsLeft % 60;
+  const str = `${pad(m)}:${pad(s)}`;
+  timeDisplay.textContent = str;
+  document.title = isRunning
+    ? `${str} · ${MODE_LABELS[currentMode]} · Pomodoro`
+    : 'Pomodoro Timer – Free Focus & Productivity Timer';
+}
+
+function renderRing() {
+  const progress = totalSeconds > 0 ? secondsLeft / totalSeconds : 1;
+  ringProgress.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+}
+
+function renderDots() {
+  sessionDots.forEach((dot, i) => dot.classList.toggle('filled', i < sessionCount));
+}
+
+/* ── Task label inside ring ─────────────────────────────── */
+taskInput.addEventListener('input', () => {
+  taskLabel.textContent = taskInput.value.trim();
+});
+
+/* ── Settings ───────────────────────────────────────────── */
+settingsBtn.addEventListener('click', () => {
+  const isOpen = settingsPanel.classList.toggle('open');
+  settingsPanel.ariaHidden  = String(!isOpen);
+  settingsBtn.ariaExpanded  = String(isOpen);
+});
+
+G('apply-btn').addEventListener('click', () => {
+  const w = Math.min(99, Math.max(1, +cfgWork.value  || 25));
+  const s = Math.min(99, Math.max(1, +cfgShort.value || 5));
+  const l = Math.min(99, Math.max(1, +cfgLong.value  || 15));
+  config = { work: w, short: s, long: l };
+  localStorage.setItem(STORAGE_KEYS.work,  w);
+  localStorage.setItem(STORAGE_KEYS.short, s);
+  localStorage.setItem(STORAGE_KEYS.long,  l);
+  switchMode(currentMode);
+  settingsPanel.classList.remove('open');
+  settingsPanel.ariaHidden = 'true';
+  settingsBtn.ariaExpanded = 'false';
+});
+
+/* ── Keyboard shortcuts ─────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); isRunning ? pauseTimer() : startTimer(); }
+  if (e.key  === 'r' || e.key === 'R') { e.preventDefault(); resetTimer(); }
+  if (e.key  === 's' || e.key === 'S') { e.preventDefault(); skipSession(); }
+});
+
+/* ── Web Audio API — ascending C-major bell ─────────────── */
+function playBell() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[523.25, 0], [659.25, 0.2], [783.99, 0.38], [1046.5, 0.56]].forEach(([freq, delay]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + delay;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.65);
+      osc.start(t);
+      osc.stop(t + 0.67);
+    });
+  } catch (_) { /* AudioContext unavailable */ }
+}
+
+/* ── Browser notifications ──────────────────────────────── */
+function sendNotification() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const messages = {
+    work:  'Break time! You earned it. 🎉',
+    short: "Break's over — focus time! 🍅",
+    long:  'Long break done. Ready to go? 🚀',
+  };
+  new Notification('Pomodoro Timer', { body: messages[currentMode], silent: true });
+}
+
+/* ── PWA manifest (blob) ────────────────────────────────── */
+function initManifest() {
+  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="88" fill="#e63946"/><circle cx="256" cy="300" r="155" fill="white" opacity=".95"/><path d="M256 145C235 112 208 120 208 136s14 22 30 23" stroke="white" stroke-width="20" stroke-linecap="round" fill="none"/><path d="M256 145C277 112 304 120 304 136s-14 22-30 23" stroke="white" stroke-width="20" stroke-linecap="round" fill="none"/><line x1="256" y1="158" x2="256" y2="185" stroke="white" stroke-width="20" stroke-linecap="round"/></svg>`;
+  const iconUri = 'data:image/svg+xml,' + encodeURIComponent(iconSvg);
+
+  const manifest = {
+    name: 'Pomodoro Focus Timer',
+    short_name: 'Pomodoro',
+    description: 'Free Pomodoro Timer – Boost focus and productivity. Works offline.',
+    start_url: './',
+    display: 'standalone',
+    orientation: 'portrait-primary',
+    background_color: '#0d1117',
+    theme_color: '#e63946',
+    categories: ['productivity', 'utilities'],
+    icons: [
+      { src: iconUri, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: iconUri, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+    ],
+    shortcuts: [
+      { name: 'Start Focus Session', short_name: 'Focus', url: './?mode=work',  description: '25-min focus session' },
+      { name: 'Take a Short Break',  short_name: 'Break', url: './?mode=short', description: '5-min short break' },
+    ],
+  };
+
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  G('pwa-manifest').href = URL.createObjectURL(blob);
+
+  const touchIcon = document.createElement('link');
+  touchIcon.rel   = 'apple-touch-icon';
+  touchIcon.href  = iconUri;
+  document.head.appendChild(touchIcon);
+}
+
+/* ── Service worker (blob) ──────────────────────────────── */
+// NOTE: For production deployment, serve /sw.js from the root to enable
+// full offline caching. The blob URL approach demonstrates the intent.
+function initServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const swCode = `
+const CACHE_NAME = 'pomo-v2';
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('./')))
+  );
+});`;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+}
+
+/* ── PWA install prompt ─────────────────────────────────── */
+const installBanner = G('install-banner');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installEvent = e;
+  installBanner.classList.add('visible');
+});
+
+G('install-btn').addEventListener('click', async () => {
+  if (!installEvent) return;
+  installEvent.prompt();
+  await installEvent.userChoice;
+  installEvent = null;
+  installBanner.classList.remove('visible');
+});
+
+G('dismiss-btn').addEventListener('click', () => {
+  installBanner.classList.remove('visible');
+});
+
+window.addEventListener('appinstalled', () => {
+  installBanner.classList.remove('visible');
+});
+
+/* ── Re-sync on tab focus ───────────────────────────────── */
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && isRunning) tick();
+});
+</script>
+</body>
+</html>
