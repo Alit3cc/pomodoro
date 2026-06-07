@@ -218,6 +218,28 @@ footer { text-align:center; padding:1.25rem 1rem; font-size:.8125rem; color:var(
     </div>
   </nav>
 
+  <!-- Settings panel -->
+  <section class="settings-panel" id="settings-panel" aria-labelledby="settings-title-lbl" aria-hidden="true">
+    <div class="settings-inner">
+      <span class="settings-title" id="settings-title-lbl">Timer Duration — minutes</span>
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label for="cfg-work">Pomodoro</label>
+          <input type="number" id="cfg-work" min="1" max="99" value="25" />
+        </div>
+        <div class="setting-item">
+          <label for="cfg-short">Short Break</label>
+          <input type="number" id="cfg-short" min="1" max="99" value="5" />
+        </div>
+        <div class="setting-item">
+          <label for="cfg-long">Long Break</label>
+          <input type="number" id="cfg-long" min="1" max="99" value="15" />
+        </div>
+      </div>
+      <button class="apply-btn" id="apply-btn">Apply Settings</button>
+    </div>
+  </section>
+
   <!-- Timer card -->
   <section class="timer-card" id="timer-region" role="tabpanel" aria-label="Timer">
 
@@ -272,28 +294,6 @@ footer { text-align:center; padding:1.25rem 1rem; font-size:.8125rem; color:var(
       <span><kbd>Space</kbd> Start/Pause</span>
       <span><kbd>R</kbd> Reset</span>
       <span><kbd>S</kbd> Skip</span>
-    </div>
-  </section>
-
-  <!-- Settings panel -->
-  <section class="settings-panel" id="settings-panel" aria-labelledby="settings-title-lbl" aria-hidden="true">
-    <div class="settings-inner">
-      <span class="settings-title" id="settings-title-lbl">Timer Duration — minutes</span>
-      <div class="settings-grid">
-        <div class="setting-item">
-          <label for="cfg-work">Pomodoro</label>
-          <input type="number" id="cfg-work" min="1" max="99" value="25" />
-        </div>
-        <div class="setting-item">
-          <label for="cfg-short">Short Break</label>
-          <input type="number" id="cfg-short" min="1" max="99" value="5" />
-        </div>
-        <div class="setting-item">
-          <label for="cfg-long">Long Break</label>
-          <input type="number" id="cfg-long" min="1" max="99" value="15" />
-        </div>
-      </div>
-      <button class="apply-btn" id="apply-btn">Apply Settings</button>
     </div>
   </section>
 
